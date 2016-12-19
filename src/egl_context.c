@@ -116,7 +116,7 @@ static GLFWbool chooseEGLConfig(const _GLFWctxconfig* ctxconfig,
         if (!(getEGLConfigAttrib(n, EGL_COLOR_BUFFER_TYPE) & EGL_RGB_BUFFER))
             continue;
 
-#if defined(_GLFW_EGLDEVICE)
+#if defined(_GLFW_EGLDEV)
         // Only consider stream EGLConfigs
         if (!(getEGLConfigAttrib(n, EGL_SURFACE_TYPE) & EGL_STREAM_BIT_KHR))
             continue;
@@ -382,7 +382,7 @@ GLFWbool _glfwInitEGL(void)
 
 // For EGLDevice backend the display gets initialized
 //  in _glfwPlatformInit()
-#if !defined(_GLFW_EGLDEVICE)
+#if !defined(_GLFW_EGLDEV)
     _glfw.egl.display = eglGetDisplay(_GLFW_EGL_NATIVE_DISPLAY);
     if (_glfw.egl.display == EGL_NO_DISPLAY)
     {
@@ -583,7 +583,7 @@ GLFWbool _glfwCreateContextEGL(_GLFWwindow* window,
 
 // The surface for EGLDevice backened is created in _glfwPlatformCreateWindow
 //
-#if !defined (_GLFW_EGLDEVICE)
+#if !defined (_GLFW_EGLDEV)
     window->context.egl.surface =
         eglCreateWindowSurface(_glfw.egl.display,
                                config,

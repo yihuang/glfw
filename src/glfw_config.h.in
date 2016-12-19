@@ -47,7 +47,7 @@
 // Define this to 1 if building GLFW for OSMesa
 #cmakedefine _GLFW_OSMESA
 // Define this to 1 if building GLFW for EGLDevice
-#cmakedefine _GLFW_EGLDEVICE
+#cmakedefine _GLFW_EGLDEV
 
 // Define this to 1 if building as a shared library / dynamic library / DLL
 #cmakedefine _GLFW_BUILD_DLL

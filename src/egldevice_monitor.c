@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.2 EGLDevice - www.glfw.org
+// GLFW 3.3 EGLDevice - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2016, NVIDIA CORPORATION. All rights reserved.
 //
@@ -33,29 +33,29 @@ static GLFWbool pickConnector(_GLFWmonitor* monitor, int drm_fd, drmModeRes* res
     // Getting suitable connector, encoder and crtc
     for (i = 0; i < res_info->count_connectors; i++)
     {
-        monitor->egldevice.connId = res_info->connectors[i];
+        monitor->egldev.connId = res_info->connectors[i];
 
         drmModeConnector* conn_info;
 
         conn_info  =
-            drmModeGetConnector(drm_fd, monitor->egldevice.connId);
+            drmModeGetConnector(drm_fd, monitor->egldev.connId);
         if (!conn_info)
         {
             _glfwInputError(GLFW_PLATFORM_ERROR,
                             "EGLDevice: Unable to obtain info for connector (%d)",
-                            monitor->egldevice.connId);
+                            monitor->egldev.connId);
             return GLFW_FALSE;
         }
         if (conn_info->connection == DRM_MODE_CONNECTED &&
             conn_info->count_modes > 0 &&
             conn_info->count_encoders > 0)
         {
-                monitor->egldevice.encId = conn_info->encoders[0];
+                monitor->egldev.encId = conn_info->encoders[0];
 
                 drmModeEncoder* enc_info;
 
                 enc_info =
-                    drmModeGetEncoder(drm_fd, monitor->egldevice.encId);
+                    drmModeGetEncoder(drm_fd, monitor->egldev.encId);
                 if (!enc_info) {
                     _glfwInputError(GLFW_PLATFORM_ERROR,
                                     "EGLDevice: Unable to query DRM-KMS"
@@ -74,13 +74,13 @@ static GLFWbool pickConnector(_GLFWmonitor* monitor, int drm_fd, drmModeRes* res
                     if ((enc_info->possible_crtcs & (1 << j)) == 0)
                         continue;
 
-                    monitor->egldevice.crtcId = res_info->crtcs[j];
-                    monitor->egldevice.crtcIndex = j;
+                    monitor->egldev.crtcId = res_info->crtcs[j];
+                    monitor->egldev.crtcIndex = j;
 
                     if (res_info->crtcs[i] == enc_info->crtc_id)
                         break;
                 }
-                if (monitor->egldevice.crtcId == 0)
+                if (monitor->egldev.crtcId == 0)
                 {
                     _glfwInputError(GLFW_PLATFORM_ERROR,
                                     "EGLDevice: Unable to select suitable CRTC");
@@ -128,7 +128,7 @@ _GLFWmonitor** _glfwPlatformGetMonitors(int* count)
 
     *count = 1;
      // Obtain DRM resource info
-    if (!initDRMResources(monitor, _glfw.egldevice.drmFd))
+    if (!initDRMResources(monitor, _glfw.egldev.drmFd))
         return GLFW_FALSE;
 
     monitors[0] = monitor;

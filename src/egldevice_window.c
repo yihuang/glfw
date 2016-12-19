@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.2 EGLDevice - www.glfw.org
+// GLFW 3.3 EGLDevice - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2016, NVIDIA CORPORATION. All rights reserved.
 //
@@ -26,20 +26,20 @@
 
 #include "internal.h"
 
-///////////////////////////////////////////////////////////////////////////
-////////            GLFW platform API                          /////////////
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////                       GLFW platform API                      //////
+//////////////////////////////////////////////////////////////////////////
 
 int _glfwPlatformCreateWindow(_GLFWwindow* window,
                               const _GLFWwndconfig* wndconfig,
                               const _GLFWctxconfig* ctxconfig,
                               const _GLFWfbconfig* fbconfig)
 {
-    int n;
+    int count;
     _GLFWmonitor* monitor;
     EGLAttrib layerAttribs[] = { EGL_NONE, EGL_NONE, EGL_NONE };
     EGLint streamAttribs[] = { EGL_STREAM_FIFO_LENGTH_KHR,
-                             window->egldevice.fifo, EGL_NONE };
+                             window->egldev.fifo, EGL_NONE };
     EGLint surfaceAttribs[] = { EGL_WIDTH, 0, EGL_HEIGHT, 0, EGL_NONE };
 
     if (window->monitor)
@@ -47,19 +47,19 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
     else
         monitor = _glfw.monitors[0];
 
-    window->egldevice.xsurfsize = wndconfig->width;
-    window->egldevice.ysurfsize = wndconfig->height;
+    window->egldev.width  = wndconfig->width;
+    window->egldev.height = wndconfig->height;
 
     if (!_glfwCreateContextEGL(window, ctxconfig, fbconfig))
         return GLFW_FALSE;
 
     // Get the layer for this crtc/plane
     layerAttribs[0] = EGL_DRM_CRTC_EXT;
-    layerAttribs[1] = (EGLAttrib)monitor->egldevice.crtcId;
+    layerAttribs[1] = (EGLAttrib) monitor->egldev.crtcId;
 
-    if (!_glfw.egldevice.eglGetOutputLayersEXT(_glfw.egl.display, layerAttribs,
-                                               &window->egldevice.eglLayer,
-                                               1, &n) || !n)
+    if (!eglGetOutputLayersEXT(_glfw.egl.display, layerAttribs,
+                               &window->egldev.layer,
+                               1, &count) || !count)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGLDevice: Unable to obtain EGLOutputLayer");
@@ -67,18 +67,18 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
     }
 
     // Create a stream and connect to the output
-    window->egldevice.eglStream =
-        _glfw.egldevice.eglCreateStreamKHR(_glfw.egl.display, streamAttribs);
-    if (window->egldevice.eglStream == EGL_NO_STREAM_KHR)
+    window->egldev.stream = eglCreateStreamKHR(_glfw.egl.display, streamAttribs);
+    if (window->egldev.stream == EGL_NO_STREAM_KHR)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGLDevice: Unable to create stream (error 0x%x)",
                         eglGetError());
         return GLFW_FALSE;
     }
-    if (!_glfw.egldevice.eglStreamConsumerOutputEXT(_glfw.egl.display,
-                                                    window->egldevice.eglStream,
-                                                    window->egldevice.eglLayer))
+
+    if (!eglStreamConsumerOutputEXT(_glfw.egl.display,
+                                    window->egldev.stream,
+                                    window->egldev.layer))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGLDevice: Unable to connect stream (error 0x%x)",
@@ -87,18 +87,17 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
     }
 
     // Create a surface to feed the stream
-    surfaceAttribs[1] = window->egldevice.xsurfsize;
-    surfaceAttribs[3] = window->egldevice.ysurfsize;
+    surfaceAttribs[1] = window->egldev.width;
+    surfaceAttribs[3] = window->egldev.height;
     window->context.egl.surface =
-        _glfw.egldevice.eglCreateStreamProducerSurfaceKHR(_glfw.egl.display,
-                                                          window->context.egl.config,
-                                                          window->egldevice.eglStream,
-                                                          surfaceAttribs);
+        eglCreateStreamProducerSurfaceKHR(_glfw.egl.display,
+                                          window->context.egl.config,
+                                          window->egldev.stream,
+                                          surfaceAttribs);
     if (window->context.egl.surface == EGL_NO_SURFACE)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Unable to create rendering"
-                        " surface (error 0x%x)", eglGetError());
+                        "EGLDevice: Unable to create rendering surface (error 0x%x)", eglGetError());
         return GLFW_FALSE;
     }
 
@@ -110,10 +109,10 @@ void _glfwPlatformDestroyWindow(_GLFWwindow* window)
     if (window->context.client != GLFW_NO_API)
         window->context.destroy(window);
 
-    if (window->egldevice.eglStream != EGL_NO_STREAM_KHR)
+    if (window->egldev.stream != EGL_NO_STREAM_KHR)
     {
-        _glfw.egldevice.eglDestroyStreamKHR(_glfw.egl.display,
-                                            window->egldevice.eglStream);
+        eglDestroyStreamKHR(_glfw.egl.display,
+                            window->egldev.stream);
     }
 }
 
@@ -133,15 +132,15 @@ void _glfwPlatformSetWindowIcon(_GLFWwindow* window,
 void _glfwPlatformGetWindowPos(_GLFWwindow* window, int* xpos, int* ypos)
 {
     if (xpos)
-        *xpos = window->egldevice.xoffset;
+        *xpos = window->egldev.xoffset;
     if (ypos)
-        *ypos = window->egldevice.yoffset;
+        *ypos = window->egldev.yoffset;
 }
 
 void _glfwPlatformSetWindowPos(_GLFWwindow* window, int xpos, int ypos)
 {
-    window->egldevice.xoffset = xpos;
-    window->egldevice.yoffset = ypos;
+    window->egldev.xoffset = xpos;
+    window->egldev.yoffset = ypos;
 
     drmModeRes* res_info;
     _GLFWmonitor* monitor;
@@ -151,24 +150,25 @@ void _glfwPlatformSetWindowPos(_GLFWwindow* window, int xpos, int ypos)
     else
         monitor = _glfw.monitors[0];
 
-    res_info = drmModeGetResources(_glfw.egldevice.drmFd);
-    if (drmModeSetCrtc(_glfw.egldevice.drmFd,
-                       res_info->crtcs[monitor->egldevice.crtcIndex],
-                       -1, window->egldevice.xoffset, window->egldevice.yoffset,
-                       &res_info->connectors[monitor->egldevice.crtcIndex], 1, NULL))
+    res_info = drmModeGetResources(_glfw.egldev.drmFd);
+    if (drmModeSetCrtc(_glfw.egldev.drmFd,
+                       res_info->crtcs[monitor->egldev.crtcIndex],
+                       -1, window->egldev.xoffset, window->egldev.yoffset,
+                       &res_info->connectors[monitor->egldev.crtcIndex], 1, NULL))
     {
-            _glfwInputError(GLFW_PLATFORM_ERROR,
-                            "EGLDevice: Setting window pos failed");
+        _glfwInputError(GLFW_PLATFORM_ERROR,
+                        "EGLDevice: Setting window pos failed");
     }
+
     drmModeFreeResources(res_info);
 }
 
 void _glfwPlatformGetWindowSize(_GLFWwindow* window, int* width, int* height)
 {
     if (width)
-        *width = window->egldevice.xsurfsize;
+        *width = window->egldev.width;
     if (height)
-        *height = window->egldevice.ysurfsize;
+        *height = window->egldev.height;
 }
 
 void _glfwPlatformSetWindowSize(_GLFWwindow* window, int width, int height)
@@ -224,7 +224,6 @@ void _glfwPlatformMaximizeWindow(_GLFWwindow* window)
 
 void _glfwPlatformShowWindow(_GLFWwindow* window)
 {
-    return;
 }
 
 void _glfwPlatformUnhideWindow(_GLFWwindow* window)
@@ -241,7 +240,6 @@ void _glfwPlatformHideWindow(_GLFWwindow* window)
 
 void _glfwPlatformFocusWindow(_GLFWwindow* window)
 {
-    return;
 }
 
 void _glfwPlatformSetWindowMonitor(_GLFWwindow* window,
@@ -295,7 +293,6 @@ int _glfwPlatformWindowMaximized(_GLFWwindow* window)
 
 void _glfwPlatformPollEvents(void)
 {
-    return;
 }
 
 void _glfwPlatformWaitEvents(void)
@@ -366,7 +363,6 @@ int _glfwPlatformCreateStandardCursor(_GLFWcursor* cursor, int shape)
 
 void _glfwPlatformDestroyCursor(_GLFWcursor* cursor)
 {
-    return;
 }
 
 void _glfwPlatformSetCursor(_GLFWwindow* window, _GLFWcursor* cursor)
@@ -410,5 +406,6 @@ VkResult _glfwPlatformCreateWindowSurface(VkInstance instance,
 {
     _glfwInputError(GLFW_PLATFORM_ERROR,
                     "EGLDevice: _glfwPlatformCreateWindowSurface not supported");
-    return (VkResult)NULL;
+    return VK_ERROR_INITIALIZATION_FAILED;
 }
+

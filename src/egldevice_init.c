@@ -1,5 +1,5 @@
 //========================================================================
-// GLFW 3.2 EGLDevice - www.glfw.org
+// GLFW 3.3 EGLDevice - www.glfw.org
 //------------------------------------------------------------------------
 // Copyright (c) 2016, NVIDIA CORPORATION. All rights reserved.
 //
@@ -27,59 +27,52 @@
 #include "internal.h"
 
 #include <linux/limits.h>
-#include "egl_context.h"
 
-static GLFWbool initializeExtensions()
+static GLFWbool initExtensions(void)
 {
-    _glfw.egldevice.eglQueryDevicesEXT =
-        (PFNEGLQUERYDEVICESEXTPROC)
-            _glfw.egl.GetProcAddress("eglQueryDevicesEXT");
-   _glfw.egldevice.eglQueryDeviceStringEXT =
-        (PFNEGLQUERYDEVICESTRINGEXTPROC)
-            _glfw.egl.GetProcAddress("eglQueryDeviceStringEXT");
-    _glfw.egldevice.eglGetPlatformDisplayEXT =
-        (PFNEGLGETPLATFORMDISPLAYEXTPROC)
-            _glfw.egl.GetProcAddress("eglGetPlatformDisplayEXT");
-    _glfw.egldevice.eglGetOutputLayersEXT =
-        (PFNEGLGETOUTPUTLAYERSEXTPROC)
-            _glfw.egl.GetProcAddress("eglGetOutputLayersEXT");
-    _glfw.egldevice.eglCreateStreamKHR =
-        (PFNEGLCREATESTREAMKHRPROC)
-            _glfw.egl.GetProcAddress("eglCreateStreamKHR");
-    _glfw.egldevice.eglDestroyStreamKHR =
-        (PFNEGLDESTROYSTREAMKHRPROC)
-            _glfw.egl.GetProcAddress("eglDestroyStreamKHR");
-    _glfw.egldevice.eglStreamConsumerOutputEXT =
-        (PFNEGLSTREAMCONSUMEROUTPUTEXTPROC)
-            _glfw.egl.GetProcAddress("eglStreamConsumerOutputEXT");
-    _glfw.egldevice.eglCreateStreamProducerSurfaceKHR =
-        (PFNEGLCREATESTREAMPRODUCERSURFACEKHRPROC)
-            _glfw.egl.GetProcAddress("eglCreateStreamProducerSurfaceKHR");
+    _glfw.egldev.QueryDevicesEXT = (PFNEGLQUERYDEVICESEXTPROC)
+        eglGetProcAddress("eglQueryDevicesEXT");
+    _glfw.egldev.QueryDeviceStringEXT = (PFNEGLQUERYDEVICESTRINGEXTPROC)
+        eglGetProcAddress("eglQueryDeviceStringEXT");
+    _glfw.egldev.GetPlatformDisplayEXT = (PFNEGLGETPLATFORMDISPLAYEXTPROC)
+        eglGetProcAddress("eglGetPlatformDisplayEXT");
+    _glfw.egldev.GetOutputLayersEXT = (PFNEGLGETOUTPUTLAYERSEXTPROC)
+        eglGetProcAddress("eglGetOutputLayersEXT");
+    _glfw.egldev.CreateStreamKHR = (PFNEGLCREATESTREAMKHRPROC)
+        eglGetProcAddress("eglCreateStreamKHR");
+    _glfw.egldev.DestroyStreamKHR = (PFNEGLDESTROYSTREAMKHRPROC)
+        eglGetProcAddress("eglDestroyStreamKHR");
+    _glfw.egldev.StreamConsumerOutputEXT = (PFNEGLSTREAMCONSUMEROUTPUTEXTPROC)
+        eglGetProcAddress("eglStreamConsumerOutputEXT");
+    _glfw.egldev.CreateStreamProducerSurfaceKHR = (PFNEGLCREATESTREAMPRODUCERSURFACEKHRPROC)
+        eglGetProcAddress("eglCreateStreamProducerSurfaceKHR");
 
-    if(!_glfw.egldevice.eglQueryDevicesEXT ||
-       !_glfw.egldevice.eglQueryDeviceStringEXT ||
-       !_glfw.egldevice.eglGetPlatformDisplayEXT ||
-       !_glfw.egldevice.eglGetOutputLayersEXT ||
-       !_glfw.egldevice.eglCreateStreamKHR ||
-       !_glfw.egldevice.eglDestroyStreamKHR ||
-       !_glfw.egldevice.eglStreamConsumerOutputEXT ||
-       !_glfw.egldevice.eglCreateStreamProducerSurfaceKHR)
+    if (!_glfw.egldev.QueryDevicesEXT ||
+        !_glfw.egldev.QueryDeviceStringEXT ||
+        !_glfw.egldev.GetPlatformDisplayEXT ||
+        !_glfw.egldev.GetOutputLayersEXT ||
+        !_glfw.egldev.CreateStreamKHR ||
+        !_glfw.egldev.DestroyStreamKHR ||
+        !_glfw.egldev.StreamConsumerOutputEXT ||
+        !_glfw.egldev.CreateStreamProducerSurfaceKHR)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGLDevice: Missing required function(s)");
         return GLFW_FALSE;
     }
+
     return GLFW_TRUE;
 }
 
 static EGLDeviceEXT getEGLDevice(void)
 {
-    int i, num_devs;
-    EGLDeviceEXT* egl_devs, eglDevice;
-    const char *clientExtensionString;
+    int i, deviceCount;
+    EGLDeviceEXT* devices, device;
+    const char* clientExtensionString;
 
-    eglDevice = EGL_NO_DEVICE_EXT;
+    device = EGL_NO_DEVICE_EXT;
     clientExtensionString = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+
     if (!_glfwStringInExtensionString("EGL_EXT_device_base",
                                       clientExtensionString) &&
         (!_glfwStringInExtensionString("EGL_EXT_device_enumeration",
@@ -91,81 +84,81 @@ static EGLDeviceEXT getEGLDevice(void)
                         "EGLDevice: EGL_EXT_device base extensions not found");
     }
 
-    if (!_glfw.egldevice.eglQueryDevicesEXT(0, NULL, &num_devs))
+    if (!eglQueryDevicesEXT(0, NULL, &deviceCount))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGLDevice: Falied to query EGLDevice");
     }
-    if (num_devs < 1)
+
+    if (deviceCount < 1)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: No Devices Found");
+                        "EGLDevice: No devices found");
     }
 
-    egl_devs = calloc(sizeof(EGLDeviceEXT), num_devs);
-    if (egl_devs == NULL)
+    devices = calloc(deviceCount, sizeof(EGLDeviceEXT));
+    if (devices == NULL)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGLDevice: Unable to allocate memory for device storage");
     }
 
     // Select suitable device
-    if (!_glfw.egldevice.eglQueryDevicesEXT(num_devs, egl_devs, &num_devs))
+    if (!eglQueryDevicesEXT(deviceCount, devices, &deviceCount))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
                         "EGLDevice: Failed to query EGL devices");
     }
 
-    for (i = 0; i <= num_devs; i++)
+    for (i = 0;  i <= deviceCount;  i++)
     {
         const char* deviceExtensionString;
 
-        deviceExtensionString = 
-            _glfw.egldevice.eglQueryDeviceStringEXT(egl_devs[i], EGL_EXTENSIONS);
+        deviceExtensionString =
+            eglQueryDeviceStringEXT(devices[i], EGL_EXTENSIONS);
         if (_glfwStringInExtensionString("EGL_EXT_device_drm",
                                          deviceExtensionString))
         {
-            eglDevice = egl_devs[i];
+            device = devices[i];
             break;
         }
     }
 
-    free(egl_devs);
+    free(devices);
 
-    if (eglDevice == EGL_NO_DEVICE_EXT)
+    if (device == EGL_NO_DEVICE_EXT)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Missing required extension:"
-                        " EGL_EXT_device_drm");
+                        "EGLDevice: Required extension EGL_EXT_device_drm missing");
     }
-    return eglDevice;
+
+    return device;
 }
 
-static int getDRMFd(EGLDeviceEXT eglDevice)
+static int getDRMFd(EGLDeviceEXT device)
 {
     int drm_fd;
     const char* drmName;
 
-    drmName = _glfw.egldevice.eglQueryDeviceStringEXT(eglDevice,
-                                                      EGL_DRM_DEVICE_FILE_EXT);
+    drmName = eglQueryDeviceStringEXT(device, EGL_DRM_DEVICE_FILE_EXT);
     if (!drmName || (strnlen(drmName, PATH_MAX) == 0))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Couldn't obtain device file from 0x%p",
-                        (void*)(uintptr_t)eglDevice);
+                        "EGLDevice: Failed to obtain device file from 0x%p",
+                        (void*)(uintptr_t) device);
     }
 
     drm_fd = drmOpen(drmName, NULL);
     if (drm_fd < 0)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Couldn't open device file '%s'", drmName);
+                        "EGLDevice: Failed to open device file '%s'", drmName);
     }
 
     return drm_fd;
 }
 
-static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
+static GLFWbool initEGLDisplay(EGLDeviceEXT device, int drm_fd)
 {
     const char* displayExtensionString;
     EGLint displayAttribs[] = {
@@ -174,14 +167,13 @@ static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
         EGL_NONE
     };
 
-    _glfw.egl.display =
-        _glfw.egldevice.eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT,
-                                                 (void*)egl_dev,
+    _glfw.egl.display = eglGetPlatformDisplayEXT(EGL_PLATFORM_DEVICE_EXT,
+                                                 (void*) device,
                                                  displayAttribs);
     if (_glfw.egl.display == EGL_NO_DISPLAY)
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Couldn't obtain EGLDisplay for device");
+                        "EGLDevice: Failed to obtain EGLDisplay for device");
         return GLFW_FALSE;
     }
 
@@ -197,8 +189,7 @@ static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
                                       displayExtensionString))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Missing required extension:"
-                        " EGL_EXT_output_base");
+                        "EGLDevice: Required extension EGL_EXT_output_base missing");
         return GLFW_FALSE;
     }
 
@@ -206,8 +197,7 @@ static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
                                       displayExtensionString))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Missing required extension:"
-                        " EGL_EXT_output_drm");
+                        "EGLDevice: Required extension EGL_EXT_output_drm missing");
         return GLFW_FALSE;
     }
 
@@ -215,8 +205,7 @@ static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
                                       displayExtensionString))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Missing required extension:"
-                        " EGL_KHR_stream");
+                        "EGLDevice: Required extension EGL_KHR_stream missing");
         return GLFW_FALSE;
     }
 
@@ -224,21 +213,21 @@ static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
                                       displayExtensionString))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Missing required extension:"
-                        " EGL_KHR_stream_producer_eglsurface");
+                        "EGLDevice: Required extension EGL_KHR_stream_producer_eglsurface missing");
         return GLFW_FALSE;
     }
+
     if (!_glfwStringInExtensionString("EGL_EXT_stream_consumer_egloutput",
                                       displayExtensionString))
     {
         _glfwInputError(GLFW_PLATFORM_ERROR,
-                        "EGLDevice: Missing required extension:"
-                        " EGL_EXT_stream_consumer_egloutput");
+                        "EGLDevice: Required extension EGL_EXT_stream_consumer_egloutput missing");
         return GLFW_FALSE;
     }
 
     return GLFW_TRUE;
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 //////                       GLFW platform API                      //////
@@ -246,7 +235,7 @@ static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
 
 int _glfwPlatformInit(void)
 {
-    EGLDeviceEXT egl_dev;
+    EGLDeviceEXT device;
     int drm_fd;
 
     if (!_glfwInitThreadLocalStoragePOSIX())
@@ -257,20 +246,20 @@ int _glfwPlatformInit(void)
         return GLFW_FALSE;
 
     // Initialize global data and extension function pointers
-    if (!initializeExtensions())
+    if (!initExtensions())
         return GLFW_FALSE;
 
     // Query and Obtain EGLDevice
-    egl_dev = getEGLDevice();
+    device = getEGLDevice();
 
     // Obtain and open DRM device file
-    drm_fd = getDRMFd(egl_dev);
+    drm_fd = getDRMFd(device);
 
     // Store for use later
-    _glfw.egldevice.drmFd = drm_fd;
+    _glfw.egldev.drmFd = drm_fd;
 
     // Obtain EGLDisplay
-    if (!initEGLDisplay(egl_dev, drm_fd))
+    if (!initEGLDisplay(device, drm_fd))
         return GLFW_FALSE;
 
    _glfwInitTimerPOSIX();
@@ -287,10 +276,7 @@ void _glfwPlatformTerminate(void)
 
 const char* _glfwPlatformGetVersionString(void)
 {
-    return _GLFW_VERSION_NUMBER "EGLDEVICE"
-#if defined(_GLFW_EGL)
-        " EGL"
-#endif
+    return _GLFW_VERSION_NUMBER "EGLDevice EGL"
 #if defined(_GLFW_BUILD_DLL)
         " shared"
 #endif

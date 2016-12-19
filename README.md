@@ -109,6 +109,8 @@ information on what to include when reporting a bug.
   receiving window maximization events (#778)
 - Added `glfwSetWindowAttrib` function for changing window attributes (#537)
 - Added headless [OSMesa](http://mesa3d.org/osmesa.html) backend (#281,#850)
+- Added Linux [EGLDevice](https://www.khronos.org/registry/egl/extensions/EXT/EGL_EXT_device_drm.txt)
+  direct rendering backend (#786)
 - Added definition of `GLAPIENTRY` to public header
 - Added macOS specific `GLFW_COCOA_RETINA_FRAMEBUFFER` window hint
 - Removed `GLFW_USE_RETINA` compile-time option

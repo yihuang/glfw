@@ -31,6 +31,12 @@ GLFW now supports the `VK_MVK_macos_surface` window surface creation extension
 provided by [MoltenVK](https://moltengl.com/moltenvk/).
 
 
+@subsection news_33_egldev EGLDevice backend for direct rendering on Linux
+
+GLFW now supports direct rendering on Linux without any display server via the
+EGLDevice extensions.
+
+
 @subsection news_33_osmesa OSMesa backend for headless software rendering
 
 GLFW now supports headless context creation and software rendering via OSMesa,

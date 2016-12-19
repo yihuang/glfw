@@ -44,6 +44,7 @@ endif()
 if (UNIX AND NOT APPLE)
     option(GLFW_USE_WAYLAND "Use Wayland for window creation" OFF)
     option(GLFW_USE_MIR     "Use Mir for window creation" OFF)
+    option(GLFW_USE_EGLDEV  "Use EGLDevice for display access" OFF)
 endif()
 
 if (MSVC)
@@ -155,13 +156,7 @@ endif()
 #--------------------------------------------------------------------
 # Detect and select backend APIs
 #--------------------------------------------------------------------
-if (GLFW_USE_WAYLAND)
-    set(_GLFW_WAYLAND 1)
-    message(STATUS "Using Wayland for window creation")
-elseif (GLFW_USE_MIR)
-    set(_GLFW_MIR 1)
-    message(STATUS "Using Mir for window creation")
-elseif (GLFW_USE_OSMESA)
+if (GLFW_USE_OSMESA)
     set(_GLFW_OSMESA 1)
     message(STATUS "Using OSMesa for headless context creation")
 elseif (WIN32)
@@ -177,8 +172,8 @@ elseif (UNIX)
     elseif (GLFW_USE_MIR)
         set(_GLFW_MIR 1)
         message(STATUS "Using Mir for window creation")
-    elseif (GLFW_USE_EGLDEVICE)
-        set(_GLFW_EGLDEVICE 1)
+    elseif (GLFW_USE_EGLDEV)
+        set(_GLFW_EGLDEV 1)
         message(STATUS "Using EGLDevice for window creation")
     else()
         set(_GLFW_X11 1)
@@ -316,11 +311,12 @@ endif()
 #--------------------------------------------------------------------
 # Use EGLDevice for window creation
 #--------------------------------------------------------------------
-if (_GLFW_EGLDEVICE)
+if (_GLFW_EGLDEV)
+    find_package(DRM REQUIRED)
 
-    list(APPEND glfw_LIBRARIES "-ldrm")
-    list(APPEND glfw_LIBRARIES "-lpthread")
-
+    list(APPEND glfw_INCLUDE_DIRS "${DRM_INCLUDE_DIR}")
+    list(APPEND glfw_LIBRARIES "${DRM_LIBRARY}" "${CMAKE_THREAD_LIBS_INIT}")
+    list(APPEND glfw_PKG_DEPS "drm")
 endif()
 
 #--------------------------------------------------------------------
