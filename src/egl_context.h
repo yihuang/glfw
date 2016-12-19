@@ -85,6 +85,8 @@ typedef MirEGLNativeWindowType EGLNativeWindowType;
 #define EGL_OPENGL_ES_API 0x30a0
 #define EGL_OPENGL_API 0x30a2
 #define EGL_NONE 0x3038
+#define EGL_WIDTH 0x3057
+#define EGL_HEIGHT 0x3056
 #define EGL_EXTENSIONS 0x3055
 #define EGL_CONTEXT_CLIENT_VERSION 0x3098
 #define EGL_NATIVE_VISUAL_ID 0x302e
@@ -112,6 +114,7 @@ typedef MirEGLNativeWindowType EGLNativeWindowType;
 typedef int EGLint;
 typedef unsigned int EGLBoolean;
 typedef unsigned int EGLenum;
+typedef intptr_t EGLAttrib;
 typedef void* EGLConfig;
 typedef void* EGLContext;
 typedef void* EGLDisplay;

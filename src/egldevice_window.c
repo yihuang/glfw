@@ -260,6 +260,18 @@ int _glfwPlatformWindowFocused(_GLFWwindow* window)
     return GLFW_FALSE;
 }
 
+void _glfwPlatformSetWindowResizable(_GLFWwindow* window, GLFWbool enabled)
+{
+}
+
+void _glfwPlatformSetWindowDecorated(_GLFWwindow* window, GLFWbool enabled)
+{
+}
+
+void _glfwPlatformSetWindowFloating(_GLFWwindow* window, GLFWbool enabled)
+{
+}
+
 int _glfwPlatformWindowIconified(_GLFWwindow* window)
 {
     _glfwInputError(GLFW_PLATFORM_ERROR,
@@ -329,6 +341,13 @@ const char* _glfwPlatformGetKeyName(int key, int scancode)
     return NULL;
 }
 
+int _glfwPlatformGetKeyScancode(int key)
+{
+    _glfwInputError(GLFW_PLATFORM_ERROR,
+                    "EGLDevice: _glfwPlatformGetKeyScancode not supported");
+    return 0;
+}
+
 int _glfwPlatformCreateCursor(_GLFWcursor* cursor,
                               const GLFWimage* image,
                               int xhot, int yhot)
@@ -369,11 +388,10 @@ const char* _glfwPlatformGetClipboardString(_GLFWwindow* window)
     return NULL;
 }
 
-char** _glfwPlatformGetRequiredInstanceExtensions(uint32_t* count)
+void _glfwPlatformGetRequiredInstanceExtensions(char** extensions)
 {
     _glfwInputError(GLFW_PLATFORM_ERROR,
                     "EGLDevice: _glfwPlatformGetRequiredInstanceExtensions not supported");
-    return NULL;
 }
 
 int _glfwPlatformGetPhysicalDevicePresentationSupport(VkInstance instance,

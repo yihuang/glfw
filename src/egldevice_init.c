@@ -187,10 +187,7 @@ static GLFWbool initEGLDisplay(EGLDeviceEXT egl_dev, int drm_fd)
 
     if (!eglInitialize(_glfw.egl.display, &_glfw.egl.major, &_glfw.egl.minor))
     {
-        _glfwInputError(GLFW_API_UNAVAILABLE,
-                        "EGL: Failed to initialize EGL: %s",
-                        eglGetError());
-
+        _glfwInputError(GLFW_API_UNAVAILABLE, "EGL: Failed to initialize EGL");
         return GLFW_FALSE;
     }
 
