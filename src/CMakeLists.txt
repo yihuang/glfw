@@ -40,11 +40,11 @@ elseif (_GLFW_WAYLAND)
         ${WAYLAND_PROTOCOLS_PKGDATADIR}/unstable/pointer-constraints/pointer-constraints-unstable-v1.xml
         BASENAME pointer-constraints-unstable-v1)
 elseif(_GLFW_EGLDEV)
-    set(glfw_HEADERS ${common_HEADERS} egldevice_platform.h linux_joystick.h
+    set(glfw_HEADERS ${common_HEADERS} egldev_platform.h linux_joystick.h
                      posix_time.h posix_tls.h xkb_unicode.h egl_context.h)
-    set(glfw_SOURCES ${common_SOURCES} egldevice_init.c egldevice_monitor.c egldevice_window.c
-                     linux_joystick.c posix_time.c posix_tls.c xkb_unicode.c
-                     egl_context.c)
+    set(glfw_SOURCES ${common_SOURCES} egldev_init.c egldev_monitor.c
+                     egldev_window.c linux_joystick.c posix_time.c posix_tls.c
+                     xkb_unicode.c egl_context.c)
 elseif (_GLFW_MIR)
     set(glfw_HEADERS ${common_HEADERS} mir_platform.h linux_joystick.h
                      posix_time.h posix_tls.h xkb_unicode.h egl_context.h)
