@@ -1034,7 +1034,7 @@ extern "C" {
  *  @sa @ref glfwGetProcAddress
  *
  *  @since Added in version 3.0.
- 
+ *
  *  @ingroup context
  */
 typedef void (*GLFWglproc)(void);
@@ -3033,7 +3033,7 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* window, int attrib);
  *  The supported attributes are [GLFW_DECORATED](@ref GLFW_DECORATED_attrib),
  *  [GLFW_RESIZABLE](@ref GLFW_RESIZABLE_attrib),
  *  [GLFW_FLOATING](@ref GLFW_FLOATING_attrib) and
- *  [GLFW_AUTO_ICONIFY](@ref GLFW_AUTO_ICONIFY_attrib).   
+ *  [GLFW_AUTO_ICONIFY](@ref GLFW_AUTO_ICONIFY_attrib).
  *
  *  Some of these attributes are ignored for full screen windows.  The new
  *  value will take effect if the window is later made windowed.
@@ -4610,7 +4610,7 @@ GLFWAPI void glfwSetTime(double time);
  *  1&nbsp;/&nbsp;frequency seconds.  To get the frequency, call @ref
  *  glfwGetTimerFrequency.
  *
- *  @return The value of the timer, or zero if an 
+ *  @return The value of the timer, or zero if an
  *  [error](@ref error_handling) occurred.
  *
  *  @errors Possible errors include @ref GLFW_NOT_INITIALIZED.
