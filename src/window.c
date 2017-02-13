@@ -393,6 +393,21 @@ GLFWAPI void glfwWindowHint(int hint, int value)
     }
 }
 
+GLFWAPI void glfwWindowHintPointer(int hint, void* value)
+{
+    _GLFW_REQUIRE_INIT();
+
+    switch (hint)
+    {
+        case GLFW_NATIVE_PARENT_HANDLE:
+	        _glfw.hints.window.nativeParent = value;
+            break;
+        default:
+            _glfwInputError(GLFW_INVALID_ENUM, "Invalid window hint %i", hint);
+            break;
+    }
+}
+
 GLFWAPI void glfwDestroyWindow(GLFWwindow* handle)
 {
     _GLFWwindow* window = (_GLFWwindow*) handle;
@@ -805,6 +820,15 @@ GLFWAPI void glfwSetWindowAttrib(GLFWwindow* handle, int attrib, int value)
     }
 
     _glfwInputError(GLFW_INVALID_ENUM, "Invalid window attribute 0x%08X", attrib);
+}
+
+GLFWAPI void* glfwGetWindowNativeHandle(GLFWwindow* handle)
+{
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    assert(window != NULL);
+
+    _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
+    return _glfwPlatformGetWindowNativeHandle(window);
 }
 
 GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* handle)

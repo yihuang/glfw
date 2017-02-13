@@ -505,8 +505,12 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
 
         _glfwGrabErrorHandlerX11();
 
+        const Window parent = (wndconfig->nativeParent
+                               ? (Window)wndconfig->nativeParent
+                               : _glfw.x11.root);
+
         window->x11.handle = XCreateWindow(_glfw.x11.display,
-                                           _glfw.x11.root,
+                                           parent,
                                            0, 0,
                                            wndconfig->width, wndconfig->height,
                                            0,      // Border width
@@ -2129,6 +2133,11 @@ void _glfwPlatformFocusWindow(_GLFWwindow* window)
     }
 
     XFlush(_glfw.x11.display);
+}
+
+void* _glfwPlatformGetWindowNativeHandle(_GLFWwindow* window)
+{
+	return (void*)window->x11.handle;
 }
 
 void _glfwPlatformSetWindowMonitor(_GLFWwindow* window,

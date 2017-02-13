@@ -290,6 +290,7 @@ struct _GLFWwndconfig
     int           width;
     int           height;
     const char*   title;
+    void*         nativeParent;
     GLFWbool      resizable;
     GLFWbool      visible;
     GLFWbool      decorated;
@@ -670,6 +671,15 @@ void _glfwPlatformShowWindow(_GLFWwindow* window);
 void _glfwPlatformHideWindow(_GLFWwindow* window);
 void _glfwPlatformRequestWindowAttention(_GLFWwindow* window);
 void _glfwPlatformFocusWindow(_GLFWwindow* window);
+
+/*! @copydoc glfwGetWindowNativeHandle
+ *  @ingroup platform
+ */
+void* _glfwPlatformGetWindowNativeHandle(_GLFWwindow* window);
+
+/*! @copydoc glfwSetWindowMonitor
+ *  @ingroup platform
+ */
 void _glfwPlatformSetWindowMonitor(_GLFWwindow* window, _GLFWmonitor* monitor, int xpos, int ypos, int width, int height, int refreshRate);
 int _glfwPlatformWindowFocused(_GLFWwindow* window);
 int _glfwPlatformWindowIconified(_GLFWwindow* window);
