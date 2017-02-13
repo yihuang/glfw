@@ -199,6 +199,25 @@ full screen windows.  This hint is ignored for full screen windows.
 `GLFW_MAXIMIZED` specifies whether the windowed mode window will be maximized
 when created.  This hint is ignored for full screen windows.
 
+@anchor GLFW_CENTER_CURSOR_hint
+__GLFW_CENTER_CURSOR__ specifies whether the cursor should be centered over
+newly created full screen windows.  This hint is ignored for windowed mode
+windows.
+
+@anchor GLFW_NATIVE_PARENT_hint
+
+__GLFW_NATIVE_PARENT__ specifies the native platform window which the GLFW
+window should use as a parent.  This can be used to embed a GLFW context within
+an existing application or API that provides a native window handle.
+
+@par
+@macos Value must be a `NSView*`
+
+@par
+__X11:__ Value must be a `Window`
+
+@par
+__Windows:__ Value must be a `HWND`
 
 @subsubsection window_hints_fb Framebuffer related hints
 

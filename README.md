@@ -1,5 +1,11 @@
 # GLFW
 
+NOTE: This is an experimental fork of GLFW investigating native window
+embedding, for things like implementing plugin GUIs.  Currently it only
+compiles on X11, and only successfully embeds in Qt (and crashes in Gtk for as
+yet mysterious reasons).  **Do not use this repository** unless you are
+interested in working on embedding with GLFW.
+
 [![Build status](https://travis-ci.org/glfw/glfw.svg?branch=master)](https://travis-ci.org/glfw/glfw)
 [![Build status](https://ci.appveyor.com/api/projects/status/0kf0ct9831i5l6sp/branch/master?svg=true)](https://ci.appveyor.com/project/elmindreda/glfw)
 [![Coverity Scan](https://scan.coverity.com/projects/4884/badge.svg)](https://scan.coverity.com/projects/glfw-glfw)
@@ -230,6 +236,7 @@ skills.
  - Cyril Pichard
  - Pieroman
  - Philip Rideout
+ - David Robillard
  - Jorge Rodriguez
  - Ed Ropple
  - Aleksey Rybalkin

@@ -253,6 +253,7 @@ struct _GLFWwndconfig
     int           width;
     int           height;
     const char*   title;
+    void*         nativeParent;
     GLFWbool      resizable;
     GLFWbool      visible;
     GLFWbool      decorated;
@@ -716,6 +717,11 @@ void _glfwPlatformHideWindow(_GLFWwindow* window);
  *  @ingroup platform
  */
 void _glfwPlatformFocusWindow(_GLFWwindow* window);
+
+/*! @copydoc glfwGetWindowNativeHandle
+ *  @ingroup platform
+ */
+void* _glfwPlatformGetWindowNativeHandle(_GLFWwindow* window);
 
 /*! @copydoc glfwSetWindowMonitor
  *  @ingroup platform

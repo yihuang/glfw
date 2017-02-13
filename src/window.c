@@ -374,6 +374,21 @@ GLFWAPI void glfwWindowHint(int hint, int value)
     }
 }
 
+GLFWAPI void glfwWindowHintPointer(int hint, void* value)
+{
+    _GLFW_REQUIRE_INIT();
+
+    switch (hint)
+    {
+        case GLFW_NATIVE_PARENT_HANDLE:
+	        _glfw.hints.window.nativeParent = value;
+            break;
+        default:
+            _glfwInputError(GLFW_INVALID_ENUM, "Invalid window hint %i", hint);
+            break;
+    }
+}
+
 GLFWAPI void glfwDestroyWindow(GLFWwindow* handle)
 {
     _GLFWwindow* window = (_GLFWwindow*) handle;
@@ -721,6 +736,61 @@ GLFWAPI int glfwGetWindowAttrib(GLFWwindow* handle, int attrib)
 
     _glfwInputError(GLFW_INVALID_ENUM, "Invalid window attribute %i", attrib);
     return 0;
+}
+
+GLFWAPI void glfwSetWindowAttrib(GLFWwindow* handle, int attrib, int value)
+{
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    assert(window != NULL);
+
+    _GLFW_REQUIRE_INIT();
+
+    value = value ? GLFW_TRUE : GLFW_FALSE;
+
+    switch (attrib)
+    {
+        case GLFW_RESIZABLE:
+            if (window->resizable != value)
+            {
+                window->resizable = value;
+                if (!window->monitor)
+                    _glfwPlatformSetWindowResizable(window, value);
+            }
+            return;
+
+        case GLFW_DECORATED:
+            if (window->decorated != value)
+            {
+                window->decorated = value;
+                if (!window->monitor)
+                    _glfwPlatformSetWindowDecorated(window, value);
+            }
+            return;
+
+        case GLFW_FLOATING:
+            if (window->floating != value)
+            {
+                window->floating = value;
+                if (!window->monitor)
+                    _glfwPlatformSetWindowFloating(window, value);
+            }
+            return;
+
+        case GLFW_AUTO_ICONIFY:
+            window->autoIconify = value;
+            return;
+    }
+
+    _glfwInputError(GLFW_INVALID_ENUM, "Invalid window attribute %i", attrib);
+}
+
+GLFWAPI void* glfwGetWindowNativeHandle(GLFWwindow* handle)
+{
+    _GLFWwindow* window = (_GLFWwindow*) handle;
+    assert(window != NULL);
+
+    _GLFW_REQUIRE_INIT_OR_RETURN(NULL);
+    return _glfwPlatformGetWindowNativeHandle(window);
 }
 
 GLFWAPI GLFWmonitor* glfwGetWindowMonitor(GLFWwindow* handle)
