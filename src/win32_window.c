@@ -62,6 +62,11 @@ static DWORD getWindowStyle(const _GLFWwindow* window)
     return style;
 }
 
+void* _glfwPlatformGetWindowNativeHandle(_GLFWwindow* window)
+{
+	return (void*)window->win32.handle;
+}
+
 // Returns the extended window style for the specified window
 //
 static DWORD getWindowExStyle(const _GLFWwindow* window)
@@ -941,51 +946,60 @@ static int createNativeWindow(_GLFWwindow* window, _GLFWwindow* parent,
     DWORD style = getWindowStyle(window);
     DWORD exStyle = getWindowExStyle(window);
 
-    if (window->monitor)
-    {
-        GLFWvidmode mode;
+	const auto parent = (wndconfig->nativeParent ? wndconfig->nativeParent : NULL);
 
-        // NOTE: This window placement is temporary and approximate, as the
-        //       correct position and size cannot be known until the monitor
-        //       video mode has been picked in _glfwSetVideoModeWin32
-        _glfwPlatformGetMonitorPos(window->monitor, &xpos, &ypos);
-        _glfwPlatformGetVideoMode(window->monitor, &mode);
-        fullWidth  = mode.width;
-        fullHeight = mode.height;
-    }
-    else
-    {
-        xpos = CW_USEDEFAULT;
-        ypos = CW_USEDEFAULT;
+	if (!parent)
+	{
+		if (window->monitor)
+		{
+			GLFWvidmode mode;
 
-        if (wndconfig->maximized)
-            style |= WS_MAXIMIZE;
+			// NOTE: This window placement is temporary and approximate, as the
+			//       correct position and size cannot be known until the monitor
+			//       video mode has been picked in _glfwSetVideoModeWin32
+			_glfwPlatformGetMonitorPos(window->monitor, &xpos, &ypos);
+			_glfwPlatformGetVideoMode(window->monitor, &mode);
+			fullWidth = mode.width;
+			fullHeight = mode.height;
+		}
+		else
+		{
+			xpos = CW_USEDEFAULT;
+			ypos = CW_USEDEFAULT;
 
-        getFullWindowSize(style, exStyle,
-                          wndconfig->width, wndconfig->height,
-                          &fullWidth, &fullHeight);
-    }
+			if (wndconfig->maximized)
+				style |= WS_MAXIMIZE;
 
-    wideTitle = _glfwCreateWideStringFromUTF8Win32(wndconfig->title);
-    if (!wideTitle)
-        return GLFW_FALSE;
+			getFullWindowSize(style, exStyle,
+				wndconfig->width, wndconfig->height,
+				&fullWidth, &fullHeight);
+		}
 
-    window->win32.handle = CreateWindowExW(exStyle,
-                                           _GLFW_WNDCLASSNAME,
-                                           wideTitle,
-                                           style,
-                                           xpos, ypos,
-                                           fullWidth, fullHeight,
-                                           parent ? parent->win32.handle : wndconfig->nativeParent, // No parent window
-                                           NULL, // No window menu
-                                           GetModuleHandleW(NULL),
-                                           NULL);
+		wideTitle = _glfwCreateWideStringFromUTF8Win32(wndconfig->title);
+		if (!wideTitle)
+			return GLFW_FALSE;
 
-    if (parent) {
-        EnableWindow(parent->win32.handle, FALSE);
-    }
+		window->win32.handle = CreateWindowExW(exStyle,
+			_GLFW_WNDCLASSNAME,
+			wideTitle,
+			style,
+			xpos, ypos,
+			fullWidth, fullHeight,
+            parent ? parent->win32.handle,
+			NULL, // No window menu
+			GetModuleHandleW(NULL),
+			NULL);
 
-    free(wideTitle);
+        if (parent) {
+            EnableWindow(parent->win32.handle, FALSE);
+        }
+
+		free(wideTitle);
+	}
+	else
+	{
+		window->win32.handle = parent;
+	}
 
     if (!window->win32.handle)
     {
