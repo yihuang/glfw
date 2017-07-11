@@ -628,6 +628,7 @@ uint64_t _glfwPlatformGetTimerFrequency(void);
 /*! @ingroup platform
  */
 int _glfwPlatformCreateWindow(_GLFWwindow* window,
+	_GLFWwindow* parent,
                               const _GLFWwndconfig* wndconfig,
                               const _GLFWctxconfig* ctxconfig,
                               const _GLFWfbconfig* fbconfig);
