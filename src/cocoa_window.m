@@ -1814,3 +1814,8 @@ GLFWAPI id glfwGetCocoaWindow(GLFWwindow* handle)
     return window->ns.object;
 }
 
+void* _glfwPlatformGetWindowNativeHandle(_GLFWwindow* window)
+{
+    return (void*)glfwGetCocoaWindow(window);
+}
+
