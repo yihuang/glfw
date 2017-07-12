@@ -933,7 +933,7 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
 
 // Creates the GLFW window
 //
-static int createNativeWindow(_GLFWwindow* window,
+static int createNativeWindow(_GLFWwindow* window, _GLFWwindow* parent,
                               const _GLFWwndconfig* wndconfig)
 {
     int xpos, ypos, fullWidth, fullHeight;
@@ -976,10 +976,14 @@ static int createNativeWindow(_GLFWwindow* window,
                                            style,
                                            xpos, ypos,
                                            fullWidth, fullHeight,
-                                           NULL, // No parent window
+                                           parent ? parent->win32.handle : wndconfig->nativeParent, // No parent window
                                            NULL, // No window menu
                                            GetModuleHandleW(NULL),
                                            NULL);
+
+    if (parent) {
+        EnableWindow(parent->win32.handle, FALSE);
+    }
 
     free(wideTitle);
 
@@ -1061,11 +1065,12 @@ void _glfwUnregisterWindowClassWin32(void)
 //////////////////////////////////////////////////////////////////////////
 
 int _glfwPlatformCreateWindow(_GLFWwindow* window,
+                              _GLFWwindow* parent,
                               const _GLFWwndconfig* wndconfig,
                               const _GLFWctxconfig* ctxconfig,
                               const _GLFWfbconfig* fbconfig)
 {
-    if (!createNativeWindow(window, wndconfig))
+    if (!createNativeWindow(window, parent, wndconfig))
         return GLFW_FALSE;
 
     if (ctxconfig->client != GLFW_NO_API)
@@ -1120,6 +1125,10 @@ void _glfwPlatformDestroyWindow(_GLFWwindow* window)
 
     if (window->win32.handle)
     {
+        HWND owner = NULL;
+        if (owner = GetWindow(window->win32.handle, GW_OWNER)) {
+            EnableWindow(owner, TRUE);
+        }
         RemovePropW(window->win32.handle, L"GLFW");
         DestroyWindow(window->win32.handle);
         window->win32.handle = NULL;
