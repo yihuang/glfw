@@ -999,6 +999,7 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
         return GLFW_FALSE;
     }
 
+    if (!wndconfig->nativeParent) {
     NSRect contentRect;
 
     if (window->monitor)
@@ -1019,6 +1020,10 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
                   styleMask:getStyleMask(window)
                     backing:NSBackingStoreBuffered
                       defer:NO];
+    }
+    else {
+        window->ns.object = wndconfig->nativeParent;
+    }
 
     if (window->ns.object == nil)
     {
