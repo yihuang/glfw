@@ -791,6 +791,7 @@ extern "C" {
  *  Parent window for embedding [window hint](@ref GLFW_NATIVE_PARENT_hint).
  */
 #define GLFW_NATIVE_PARENT_HANDLE   0x0002000A
+#define GLFW_MODAL_PARENT_HANDLE   0x0002000B
 
 /*! @brief Framebuffer bit depth hint.
  *
@@ -2313,7 +2314,7 @@ GLFWAPI void glfwWindowHintPointer(int hint, void* value);
  *  @ingroup window
  */
 //GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share);
-GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share, GLFWwindow* parent);
+GLFWAPI GLFWwindow* glfwCreateWindow(int width, int height, const char* title, GLFWmonitor* monitor, GLFWwindow* share);
 
 /*! @brief Destroys the specified window and its context.
  *

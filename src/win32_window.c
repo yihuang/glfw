@@ -933,12 +933,17 @@ static LRESULT CALLBACK windowProc(HWND hWnd, UINT uMsg,
         }
     }
 
-    return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    if (window->win32._fallbackProc) {
+        return CallWindowProc(window->win32._fallbackProc, hWnd, uMsg, wParam, lParam);
+    }
+    else {
+        return DefWindowProcW(hWnd, uMsg, wParam, lParam);
+    }
 }
 
 // Creates the GLFW window
 //
-static int createNativeWindow(_GLFWwindow* window, _GLFWwindow* parent,
+static int createNativeWindow(_GLFWwindow* window,
                               const _GLFWwndconfig* wndconfig)
 {
     int xpos, ypos, fullWidth, fullHeight;
@@ -946,9 +951,7 @@ static int createNativeWindow(_GLFWwindow* window, _GLFWwindow* parent,
     DWORD style = getWindowStyle(window);
     DWORD exStyle = getWindowExStyle(window);
 
-	const auto parent = (wndconfig->nativeParent ? wndconfig->nativeParent : NULL);
-
-	if (!parent)
+	if (!wndconfig->nativeParent)
 	{
 		if (window->monitor)
 		{
@@ -985,20 +988,31 @@ static int createNativeWindow(_GLFWwindow* window, _GLFWwindow* parent,
 			style,
 			xpos, ypos,
 			fullWidth, fullHeight,
-            parent ? parent->win32.handle,
+            wndconfig->modalParent,
 			NULL, // No window menu
 			GetModuleHandleW(NULL),
 			NULL);
 
-        if (parent) {
-            EnableWindow(parent->win32.handle, FALSE);
+        if (wndconfig->modalParent) {
+            EnableWindow(wndconfig->modalParent, FALSE);
         }
 
 		free(wideTitle);
 	}
-	else
-	{
-		window->win32.handle = parent;
+    else
+    {
+        WNDPROC proc = (WNDPROC)GetWindowLong(wndconfig->nativeParent, GWL_WNDPROC);
+        if (proc != windowProc) {
+            window->win32._fallbackProc = proc;
+        }
+		window->win32.handle = wndconfig->nativeParent;
+        SetWindowLong(window->win32.handle, GWL_WNDPROC, (DWORD)windowProc);
+        if (wndconfig->modalParent) {
+            SetWindowLong(window->win32.handle, GWL_HWNDPARENT, (DWORD)wndconfig->modalParent);
+        }
+        if (wndconfig->modalParent) {
+            EnableWindow(wndconfig->modalParent, FALSE);
+        }
 	}
 
     if (!window->win32.handle)
@@ -1079,12 +1093,11 @@ void _glfwUnregisterWindowClassWin32(void)
 //////////////////////////////////////////////////////////////////////////
 
 int _glfwPlatformCreateWindow(_GLFWwindow* window,
-                              _GLFWwindow* parent,
                               const _GLFWwndconfig* wndconfig,
                               const _GLFWctxconfig* ctxconfig,
                               const _GLFWfbconfig* fbconfig)
 {
-    if (!createNativeWindow(window, parent, wndconfig))
+    if (!createNativeWindow(window, wndconfig))
         return GLFW_FALSE;
 
     if (ctxconfig->client != GLFW_NO_API)
