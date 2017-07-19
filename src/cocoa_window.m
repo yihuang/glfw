@@ -988,7 +988,6 @@ static GLFWbool initializeAppKit(void)
 // Create the Cocoa window
 //
 static GLFWbool createNativeWindow(_GLFWwindow* window,
-                                   _GLFWwindow* parent,
                                    const _GLFWwndconfig* wndconfig)
 {
     window->ns.delegate = [[GLFWWindowDelegate alloc] initWithGlfwWindow:window];
@@ -1079,7 +1078,6 @@ static GLFWbool createNativeWindow(_GLFWwindow* window,
 //////////////////////////////////////////////////////////////////////////
 
 int _glfwPlatformCreateWindow(_GLFWwindow* window,
-                              _GLFWwindow* parent,
                               const _GLFWwndconfig* wndconfig,
                               const _GLFWctxconfig* ctxconfig,
                               const _GLFWfbconfig* fbconfig)
@@ -1087,7 +1085,7 @@ int _glfwPlatformCreateWindow(_GLFWwindow* window,
     if (!initializeAppKit())
         return GLFW_FALSE;
 
-    if (!createNativeWindow(window, parent, wndconfig))
+    if (!createNativeWindow(window, wndconfig))
         return GLFW_FALSE;
 
     if (ctxconfig->client != GLFW_NO_API)
