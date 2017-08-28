@@ -433,6 +433,7 @@ struct _GLFWwindow
         GLFWcursorposfun        cursorPos;
         GLFWcursorenterfun      cursorEnter;
         GLFWscrollfun           scroll;
+        GLFWzoomfun             zoom;
         GLFWkeyfun              key;
         GLFWcharfun             character;
         GLFWcharmodsfun         charmods;
@@ -809,6 +810,7 @@ void _glfwInputChar(_GLFWwindow* window, unsigned int codepoint, int mods, GLFWb
  *  @ingroup event
  */
 void _glfwInputScroll(_GLFWwindow* window, double xoffset, double yoffset);
+void _glfwInputZoom(_GLFWwindow* window, double z);
 
 /*! @brief Notifies shared code of a mouse button click event.
  *  @param[in] window The window that received the event.

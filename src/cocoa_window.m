@@ -623,6 +623,10 @@ static const NSRange kEmptyRange = { NSNotFound, 0 };
         _glfwInputScroll(window, deltaX, deltaY);
 }
 
+- (void)magnifyWithEvent:(NSEvent *)event {
+    _glfwInputZoom(window, [event magnification]);
+}
+
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
 {
     if ((NSDragOperationGeneric & [sender draggingSourceOperationMask])

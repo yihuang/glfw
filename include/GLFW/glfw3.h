@@ -1324,6 +1324,7 @@ typedef void (* GLFWcursorenterfun)(GLFWwindow*,int);
  *  @ingroup input
  */
 typedef void (* GLFWscrollfun)(GLFWwindow*,double,double);
+typedef void (* GLFWzoomfun)(GLFWwindow*,double);
 
 /*! @brief The function signature for keyboard key callbacks.
  *
@@ -4176,6 +4177,7 @@ GLFWAPI GLFWcursorenterfun glfwSetCursorEnterCallback(GLFWwindow* window, GLFWcu
  *  @ingroup input
  */
 GLFWAPI GLFWscrollfun glfwSetScrollCallback(GLFWwindow* window, GLFWscrollfun cbfun);
+GLFWAPI GLFWzoomfun glfwSetZoomCallback(GLFWwindow* window, GLFWzoomfun cbfun);
 
 /*! @brief Sets the file drop callback.
  *
